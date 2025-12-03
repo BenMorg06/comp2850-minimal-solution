@@ -42,7 +42,7 @@
       z-index: 9999;
     }
     
-    *:focus{
+    button:focus{
       outline: 3px solid rgb(210, 25, 25);
     }
 
