@@ -279,20 +279,29 @@ private fun filterStatusFragment(
     total: Int,
 ): String =
     if (query.isBlank()) {
-        """<div id="status" hx-swap-oob="true" role="status"></div>"""
+        // Clear the visible status banner content and hide it
+        """<div id="status" hx-swap-oob="true" class="status-banner" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" aria-hidden="true"></div>"""
     } else {
         val noun = if (total == 1) "task" else "tasks"
-        """<div id="status" hx-swap-oob="true" role="status">Found $total $noun matching "$query".</div>"""
+        """<div id="status" hx-swap-oob="true" class="status-banner" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" aria-hidden="false">
+            <span class="status-message">Found $total $noun matching "$query".</span>
+            <button type="button" class="secondary" data-status-dismiss aria-label="Dismiss notification">
+                Dismiss
+            </button>
+        </div>"""
     }
 
 private fun messageStatusFragment(
     message: String,
     isError: Boolean = false,
 ): String {
-    val role = if (isError) "alert" else "status"
-    val ariaLive = if (isError) """ aria-live="assertive"""" else """ aria-live="polite""""
-    val cssClass = if (isError) """ class="error"""" else ""
-    return """<div id="status" hx-swap-oob="true" role="$role"$ariaLive$cssClass>$message</div>"""
+    val cssClass = if (isError) "status-banner error" else "status-banner"
+    return """<div id="status" hx-swap-oob="true" class="$cssClass" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" aria-hidden="false">
+        <span class="status-message">$message</span>
+        <button type="button" class="secondary" data-status-dismiss aria-label="Dismiss notification">
+            Dismiss
+        </button>
+    </div>"""
 }
 
 /**
@@ -360,7 +369,13 @@ private suspend fun ApplicationCall.handleUpdateTask(store: TaskStore) {
     if (isHtmxRequest()) {
         // HTMX: return view fragment
         val html = renderTemplate("tasks/_item.peb", mapOf("task" to updated.toPebbleContext()))
-        val status = """<div id="status" hx-swap-oob="true" role="status">Task updated successfully.</div>"""
+        val status =
+            """<div id="status" hx-swap-oob="true" class="status-banner" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" aria-hidden="false">
+                <span class="status-message">Task updated successfully.</span>
+                <button type="button" class="secondary" data-status-dismiss aria-label="Dismiss notification">
+                    Dismiss
+                </button>
+            </div>"""
         respondText(html + status, ContentType.Text.Html)
     } else {
         // No-JS: redirect to list

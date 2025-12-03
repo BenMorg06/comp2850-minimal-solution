@@ -46,6 +46,27 @@
       outline: 3px solid rgb(210, 25, 25);
     }
 
+    /* Status / notification banner for task updates and filters */
+    .status-banner {
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      border: 1px solid #90caf9;
+    }
+
+    .status-banner.error {
+      background-color: #ffebee;
+      color: #b71c1c;
+      border-color: #ef9a9a;
+    }
+
+    /* Hide status banner when marked aria-hidden="true" (no active notification) */
+    .status-banner[aria-hidden="true"] {
+      display: none;
+    }
+
     /* Pagination styles */
     .pagination {
       display: flex;
@@ -67,6 +88,17 @@
   {# Main landmark for screen readers (WCAG 1.3.1) #}
   {# tabindex="-1" allows programmatic focus for skip link #}
   <main id="main" class="container" tabindex="-1">
+    {# Visible, focusable ARIA live region for status / notification messages #}
+    <div
+      id="status"
+      class="status-banner"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      tabindex="-1"
+      aria-hidden="true"
+    ></div>
+
     {% block content %}
     {# Page-specific content goes here #}
     {% endblock %}
@@ -74,5 +106,46 @@
   
   {# Include footer with helpful links and session info #}
   {% include "_layout/_footer.peb" %}
+
+  <script>
+    // After any HTMX update, ensure the status region is focusable and move focus to it
+    // so that screen readers (including macOS VoiceOver) announce the change.
+    document.body.addEventListener('htmx:afterOnLoad', function () {
+      var status = document.getElementById('status');
+      if (!status) return;
+
+      // Re-assert live region attributes in case HTMX replaced the element.
+      status.setAttribute('role', 'alert');
+      status.setAttribute('aria-live', 'assertive');
+      status.setAttribute('aria-atomic', 'true');
+      status.setAttribute('tabindex', '-1');
+
+      // Only move focus if there is meaningful text to announce.
+      var text = status.textContent || '';
+      if (text.trim().length === 0) {
+        status.setAttribute('aria-hidden', 'true');
+        return;
+      }
+
+      // We have a message; ensure the banner is visible to assistive tech.
+      status.setAttribute('aria-hidden', 'false');
+
+      // If there is an explicit dismiss button, focus that; otherwise focus the region itself.
+      var dismiss = status.querySelector('[data-status-dismiss]');
+      var target = dismiss || status;
+      target.focus();
+    });
+
+    // Allow dismissing the alert without a page reload.
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-status-dismiss]');
+      if (!button) return;
+      var status = document.getElementById('status');
+      if (status) {
+        status.textContent = '';
+        status.setAttribute('aria-hidden', 'true');
+      }
+    });
+  </script>
 </body>
 </html>
