@@ -46,7 +46,7 @@
       outline: 3px solid rgb(210, 25, 25);
     }
 
-    
+
     .status-banner {
       margin: 1rem 0;
       padding: 0.75rem 1rem;
@@ -107,8 +107,8 @@
       if (!status) return;
 
       // Re-assert live region attributes in case HTMX replaced the element.
-      status.setAttribute('role', 'alert');
-      status.setAttribute('aria-live', 'assertive');
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
       status.setAttribute('aria-atomic', 'true');
       status.setAttribute('tabindex', '-1');
 
@@ -120,7 +120,7 @@
       }
 
       // Ensure the banner is visible to assistive tech.
-      status.setAttribute('aria-hidden', 'false');
+      status.setAttribute('aria-hidden', 'false');  
 
       // Focus the status line
       status.focus();
