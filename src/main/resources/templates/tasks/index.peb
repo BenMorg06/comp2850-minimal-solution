@@ -6,7 +6,7 @@
 <article>
     <header>
         <h1>Task Manager</h1>
-        <p>
+        <p id="total-items">
             Manage your tasks with full keyboard and screen reader support.
             {% if totalItems > 0 %}
                 Currently {{ totalItems }} task{% if totalItems != 1 %}s{% endif %}.

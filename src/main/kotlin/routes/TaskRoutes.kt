@@ -129,7 +129,16 @@ private suspend fun ApplicationCall.handleCreateTaskSuccess(
             messageStatusFragment(
                 """Task "${task.title}" added successfully.""",
             )
-        respondTaskArea(paginated, statusHtml, htmxTrigger = "task-added")
+        val totalItems = paginated.page.totalItems
+        val totalItemsHtml = if (totalItems > 0) {
+            val noun = if (totalItems == 1) "task" else "tasks"
+            """<p id="total-items" hx-swap-oob="true">Manage your tasks with full keyboard and screen reader support.
+                Currently $totalItems $noun.</p>"""
+        } else {
+            """<p id="total-items" hx-swap-oob="true">Manage your tasks with full keyboard and screen reader support.
+                No tasks yet. Add one below!</p>"""
+        }
+        respondTaskArea(paginated, statusHtml + "\n" + totalItemsHtml, htmxTrigger = "task-added")
     } else {
         response.headers.append("Location", redirectPath(query, 1))
         respond(HttpStatusCode.SeeOther)
@@ -195,11 +204,24 @@ private suspend fun ApplicationCall.handleDeleteTask(store: TaskStore) {
         }
 
         if (isHtmxRequest()) {
+            val query = requestedQuery()
+            val page = requestedPage()
+            val paginated = paginateTasks(store, query, page)
             val statusHtml =
                 messageStatusFragment(
                     """Task "${task?.title ?: "Unknown"}" deleted.""",
                 )
-            respondText(statusHtml, ContentType.Text.Html)
+            val totalItems = paginated.page.totalItems
+            val totalItemsHtml = if (totalItems > 0) {
+                val noun = if (totalItems == 1) "task" else "tasks"
+                """<p id="total-items" hx-swap-oob="true">Manage your tasks with full keyboard and screen reader support.
+                Currently $totalItems $noun.</p>"""
+            } else {
+                """<p id="total-items" hx-swap-oob="true">Manage your tasks with full keyboard and screen reader support.
+                No tasks yet. Add one below!</p>"""
+            }
+            // Return empty string to remove the task item, plus out-of-band swaps for status and totalItems
+            respondText("" + "\n" + statusHtml + "\n" + totalItemsHtml, ContentType.Text.Html)
         } else {
             response.headers.append("Location", "/tasks")
             respond(HttpStatusCode.SeeOther)
