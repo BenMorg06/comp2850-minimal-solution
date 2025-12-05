@@ -46,7 +46,7 @@
       outline: 3px solid rgb(210, 25, 25);
     }
 
-    /* Status / notification banner for task updates and filters */
+    
     .status-banner {
       margin: 1rem 0;
       padding: 0.75rem 1rem;
@@ -89,15 +89,7 @@
   {# tabindex="-1" allows programmatic focus for skip link #}
   <main id="main" class="container" tabindex="-1">
     {# Visible, focusable ARIA live region for status / notification messages #}
-    <div
-      id="status"
-      class="status-banner"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      tabindex="-1"
-      aria-hidden="true"
-    ></div>
+    <div id="status" class="status-banner" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" aria-hidden="true"></div>
 
     {% block content %}
     {# Page-specific content goes here #}
@@ -120,31 +112,18 @@
       status.setAttribute('aria-atomic', 'true');
       status.setAttribute('tabindex', '-1');
 
-      // Only move focus if there is meaningful text to announce.
+      // Check if there is a status message to announce
       var text = status.textContent || '';
       if (text.trim().length === 0) {
         status.setAttribute('aria-hidden', 'true');
         return;
       }
 
-      // We have a message; ensure the banner is visible to assistive tech.
+      // Ensure the banner is visible to assistive tech.
       status.setAttribute('aria-hidden', 'false');
 
-      // If there is an explicit dismiss button, focus that; otherwise focus the region itself.
-      var dismiss = status.querySelector('[data-status-dismiss]');
-      var target = dismiss || status;
-      target.focus();
-    });
-
-    // Allow dismissing the alert without a page reload.
-    document.addEventListener('click', function (event) {
-      var button = event.target.closest('[data-status-dismiss]');
-      if (!button) return;
-      var status = document.getElementById('status');
-      if (status) {
-        status.textContent = '';
-        status.setAttribute('aria-hidden', 'true');
-      }
+      // Focus the status line
+      status.focus();
     });
   </script>
 </body>
