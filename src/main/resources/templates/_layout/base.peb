@@ -43,7 +43,7 @@
     }
     
     button:focus{
-      outline: 3px solid rgb(210, 25, 25);
+      outline: 3px solid #ffffff;
     }
 
 
